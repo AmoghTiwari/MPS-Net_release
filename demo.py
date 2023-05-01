@@ -70,7 +70,7 @@ def main(args):
             exit(f"Input video \'{video_file}\' does not exist!")
 
         output_path = osp.join(out_dir, os.path.basename(video_file).replace('.', '_'))
-        Path(output_path).mkdir(parents=True, exist_ok=True)
+        Path(output_path).mkdir(parents=True, exist_ok=False)
         if args.save_processed_input: # Save to a target dir
             image_folder, num_frames, img_shape = video_to_images(video_file, img_folder=output_path,return_info=True)
         else: # Save to "/tmp"
@@ -79,7 +79,7 @@ def main(args):
     elif args.file_type == "frames":
         frames_dir = args.frames_dir
         output_path = osp.join(out_dir, os.path.basename(frames_dir))
-        Path(output_path).mkdir(parents=True, exist_ok=True)
+        Path(output_path).mkdir(parents=True, exist_ok=False)
         image_folder, num_frames, img_shape = frames_from_dir(frames_dir, return_info=True)
 
     print(f"Input number of frames {num_frames}\n")
@@ -264,11 +264,7 @@ def main(args):
     elif args.file_type == 'frames':
         output_img_folder = os.path.join(output_path, f"{osp.basename(args.frames_dir)}_output")
 
-    os.makedirs(output_img_folder, exist_ok=True)
-
-    # if args.save_processed_input:
-    #     input_img_folder = os.path.join(output_path, f'{image_folder}_input')
-    #     os.makedirs(input_img_folder, exist_ok=True)
+    os.makedirs(output_img_folder, exist_ok=False)
 
     print(f"\nRendering output video, writing frames to {output_img_folder}")
     # prepare results for rendering
@@ -298,7 +294,7 @@ def main(args):
             mesh_filename = None
             if args.save_obj:
                 mesh_folder = os.path.join(output_path, 'meshes', f'{person_id:04d}')
-                Path(mesh_folder).mkdir(parents=True, exist_ok=True)
+                Path(mesh_folder).mkdir(parents=True, exist_ok=False)
                 mesh_filename = os.path.join(mesh_folder, f'{frame_idx:06d}.obj')
 
             mc = mesh_color[person_id]
@@ -325,8 +321,6 @@ def main(args):
 
         # save output frames
         cv2.imwrite(os.path.join(output_img_folder, f'{frame_idx:06d}.jpg'), img)
-        # if args.save_processed_input:
-        #     cv2.imwrite(os.path.join(input_img_folder, f'{frame_idx:06d}.jpg'), input_img)
 
         if args.display:
             cv2.imshow('Video', img)
@@ -350,14 +344,15 @@ def main(args):
             images_to_video(img_folder=image_folder, output_vid_file=input_save_path)
 
     elif args.file_type == "frames":
-        # vid_name = os.path.basename(video_file)
         frames_dir_name = os.path.basename(frames_dir)
-        input_save_name = f'MPS-Net_{frames_dir_name}_input.mp4'
-        input_save_path = os.path.join(output_path, input_save_name)
         output_save_name = f'MPS-Net_{frames_dir_name}_output.mp4'
         output_save_path = os.path.join(output_path, output_save_name)
-        images_to_video(img_folder=image_folder, output_vid_file=input_save_path)
         images_to_video(img_folder=output_img_folder, output_vid_file=output_save_path)
+        if args.save_processed_input:
+            input_save_name = f'MPS-Net_{frames_dir_name}_input.mp4'
+            input_save_path = os.path.join(output_path, input_save_name)
+            # images_to_video(img_folder=image_folder, output_vid_file=input_save_path)
+            print(f"!!! WARNING !!! The video made from the input frames won't be saved. Please check the README for steps if you want to save it")
 
     print(f"Saving result video to {os.path.abspath(output_save_path)}")
     """
@@ -373,7 +368,7 @@ if __name__ == '__main__':
     parser.add_argument('--vid_file', type=str, help='input video path or youtube link')
     parser.add_argument('--frames_dir', type=str, help='path to directory with frames')
     parser.add_argument('--out_dir', default='./output/demo_output')
-    parser.add_argument('--save_processed_input', default=True, help='Should extracted frames and/or the combined video of the given frames i.e. without SMPL overlay be saved?')
+    parser.add_argument('--save_processed_input', default=False, help='Should extracted frames and/or the combined video of the given frames i.e. without SMPL overlay be saved?')
     parser.add_argument('--save_pkl', action='store_true', help='save results to a pkl file')
     parser.add_argument('--save_obj', action='store_true', help='save results as .obj files.')
 
