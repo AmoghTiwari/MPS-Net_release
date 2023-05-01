@@ -269,10 +269,10 @@ def main(args):
     print(f"\nRendering output video, writing frames to {output_img_folder}")
     # prepare results for rendering
     frame_results = prepare_rendering_results(running_results, num_frames)
-    mesh_color = {k: colorsys.hsv_to_rgb(np.random.rand(), 0.5, 1.0) for k in running_results.keys()}
-
+    # mesh_color = {k: colorsys.hsv_to_rgb(np.random.rand(), 0.5, 1.0) for k in running_results.keys()}
+    mesh_color = {k:(0.6274509803921569, 0.6274509803921569, 0.6274509803921569) for k in running_results.keys()} # Gray colour
     image_file_names = sorted([
-        os.path.join(image_folder, x)
+        os.path.join(image_folder, x)   
         for x in os.listdir(image_folder)
         if x.endswith('.png') or x.endswith('.jpg')
     ])
