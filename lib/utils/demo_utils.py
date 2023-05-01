@@ -101,7 +101,9 @@ def trim_videos(filename, start_time, end_time, output_filename):
 
 def video_to_images(vid_file, img_folder=None, return_info=False):
     if img_folder is None:
-        img_folder = osp.join('/tmp', osp.basename(vid_file).replace('.', '_'))
+        img_folder = '/tmp' # If nothing specified, save extracted video frames to "/tmp"
+    temp = osp.join(img_folder, osp.basename(vid_file).replace('.', '_'))
+    img_folder = f"{temp}_input"
 
     os.makedirs(img_folder, exist_ok=True)
 
@@ -117,6 +119,18 @@ def video_to_images(vid_file, img_folder=None, return_info=False):
     print(f'Images saved to \"{img_folder}\"')
 
     img_shape = cv2.imread(osp.join(img_folder, '000001.jpg')).shape
+
+    if return_info:
+        return img_folder, len(os.listdir(img_folder)), img_shape
+    else:
+        return img_folder
+
+def frames_from_dir(frames_dir, img_folder=None, return_info=False):
+    print(f'Images are stored in \"{frames_dir}\"')
+
+    # img_shape = cv2.imread(osp.join(img_folder, '000001.jpg')).shape
+    img_folder = frames_dir
+    img_shape = cv2.imread(osp.join(img_folder, os.listdir(img_folder)[0])).shape
 
     if return_info:
         return img_folder, len(os.listdir(img_folder)), img_shape

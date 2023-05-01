@@ -43,6 +43,7 @@ from lib.utils.demo_utils import (
     prepare_rendering_results,
     video_to_images,
     images_to_video,
+    frames_from_dir,
 )
 
 MIN_NUM_FRAMES = 25
@@ -53,25 +54,35 @@ np.random.seed(1)
 
 def main(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
+    out_dir = args.out_dir
 
     """ Prepare input video (images) """
-    video_file = args.vid_file
-    if video_file.startswith('https://www.youtube.com'):
-        print(f"Donwloading YouTube video \'{video_file}\'")
-        video_file = download_youtube_clip(video_file, '/tmp')
-        if video_file is None:
-            exit('Youtube url is not valid!')
-        print(f"YouTube Video has been downloaded to {video_file}...")
+    if args.file_type == "video":
+        video_file = args.vid_file
+        if video_file.startswith('https://www.youtube.com'):
+            print(f"Donwloading YouTube video \'{video_file}\'")
+            video_file = download_youtube_clip(video_file, '/tmp')
+            if video_file is None:
+                exit('Youtube url is not valid!')
+            print(f"YouTube Video has been downloaded to {video_file}...")
 
-    if not os.path.isfile(video_file):
-        exit(f"Input video \'{video_file}\' does not exist!")
+        if not os.path.isfile(video_file):
+            exit(f"Input video \'{video_file}\' does not exist!")
 
-    output_path = osp.join('./output/demo_output', os.path.basename(video_file).replace('.mp4', ''))
-    Path(output_path).mkdir(parents=True, exist_ok=True)
-    image_folder, num_frames, img_shape = video_to_images(video_file, return_info=True)
+        output_path = osp.join(out_dir, os.path.basename(video_file).replace('.', '_'))
+        Path(output_path).mkdir(parents=True, exist_ok=True)
+        if args.save_processed_input: # Save to a target dir
+            image_folder, num_frames, img_shape = video_to_images(video_file, img_folder=output_path,return_info=True)
+        else: # Save to "/tmp"
+            image_folder, num_frames, img_shape = video_to_images(video_file, img_folder=None,return_info=True)
+        
+    elif args.file_type == "frames":
+        frames_dir = args.frames_dir
+        output_path = osp.join(out_dir, os.path.basename(frames_dir))
+        Path(output_path).mkdir(parents=True, exist_ok=True)
+        image_folder, num_frames, img_shape = frames_from_dir(frames_dir, return_info=True)
 
-    print(f"Input video number of frames {num_frames}\n")
+    print(f"Input number of frames {num_frames}\n")
     orig_height, orig_width = img_shape[:2]
 
 
@@ -248,10 +259,16 @@ def main(args):
     """ Render results as a single video """
     renderer = Renderer(resolution=(orig_width, orig_height), orig_img=True, wireframe=args.wireframe)
 
-    output_img_folder = f'{image_folder}_output'
-    input_img_folder = f'{image_folder}_input'
+    if args.file_type == 'video':
+        output_img_folder = os.path.join(output_path, f"{osp.basename(video_file).replace('.', '_')}_output")
+    elif args.file_type == 'frames':
+        output_img_folder = os.path.join(output_path, f"{osp.basename(args.frames_dir)}_output")
+
     os.makedirs(output_img_folder, exist_ok=True)
-    os.makedirs(input_img_folder, exist_ok=True)
+
+    # if args.save_processed_input:
+    #     input_img_folder = os.path.join(output_path, f'{image_folder}_input')
+    #     os.makedirs(input_img_folder, exist_ok=True)
 
     print(f"\nRendering output video, writing frames to {output_img_folder}")
     # prepare results for rendering
@@ -308,7 +325,8 @@ def main(args):
 
         # save output frames
         cv2.imwrite(os.path.join(output_img_folder, f'{frame_idx:06d}.jpg'), img)
-        cv2.imwrite(os.path.join(input_img_folder, f'{frame_idx:06d}.jpg'), input_img)
+        # if args.save_processed_input:
+        #     cv2.imwrite(os.path.join(input_img_folder, f'{frame_idx:06d}.jpg'), input_img)
 
         if args.display:
             cv2.imshow('Video', img)
@@ -319,22 +337,45 @@ def main(args):
         cv2.destroyAllWindows()
 
     """ Save rendered video """
-    vid_name = os.path.basename(video_file)
-    save_name = f'MPS-Net_{vid_name.replace(".mp4", "")}_output.mp4'
-    save_path = os.path.join(output_path, save_name)
+    if args.file_type == "video":
+        vid_name = os.path.basename(video_file)
+        
+        output_save_name = f'MPS-Net_{vid_name.replace(".mp4", "")}_output.mp4'
+        output_save_path = os.path.join(output_path, output_save_name)
+        images_to_video(img_folder=output_img_folder, output_vid_file=output_save_path)
 
-    images_to_video(img_folder=output_img_folder, output_vid_file=save_path)
-    images_to_video(img_folder=input_img_folder, output_vid_file=os.path.join(output_path, vid_name))
-    print(f"Saving result video to {os.path.abspath(save_path)}")
-    shutil.rmtree(output_img_folder)
-    shutil.rmtree(input_img_folder)
-    shutil.rmtree(image_folder)    
+        if args.save_processed_input:
+            input_save_name = f'MPS-Net_{vid_name.replace(".mp4", "")}_input.mp4'
+            input_save_path = os.path.join(output_path, input_save_name)
+            images_to_video(img_folder=image_folder, output_vid_file=input_save_path)
 
+    elif args.file_type == "frames":
+        # vid_name = os.path.basename(video_file)
+        frames_dir_name = os.path.basename(frames_dir)
+        input_save_name = f'MPS-Net_{frames_dir_name}_input.mp4'
+        input_save_path = os.path.join(output_path, input_save_name)
+        output_save_name = f'MPS-Net_{frames_dir_name}_output.mp4'
+        output_save_path = os.path.join(output_path, output_save_name)
+        images_to_video(img_folder=image_folder, output_vid_file=input_save_path)
+        images_to_video(img_folder=output_img_folder, output_vid_file=output_save_path)
+
+    print(f"Saving result video to {os.path.abspath(output_save_path)}")
+    """
+        # shutil.rmtree(output_img_folder)
+        # shutil.rmtree(input_img_folder)
+        # shutil.rmtree(image_folder)
+    """
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--vid_file', type=str, default='sample_video.mp4', help='input video path or youtube link')
+    parser.add_argument('--file_type', required=True, choices=['video', 'frames'], help='What kind of input are you giving [videos/frames]?')
+    parser.add_argument('--vid_file', type=str, help='input video path or youtube link')
+    parser.add_argument('--frames_dir', type=str, help='path to directory with frames')
+    parser.add_argument('--out_dir', default='./output/demo_output')
+    parser.add_argument('--save_processed_input', default=True, help='Should extracted frames and/or the combined video of the given frames i.e. without SMPL overlay be saved?')
+    parser.add_argument('--save_pkl', action='store_true', help='save results to a pkl file')
+    parser.add_argument('--save_obj', action='store_true', help='save results as .obj files.')
 
     parser.add_argument('--model', type=str, default='./data/base_data/mpsnet_model_best.pth.tar', help='path to pretrained model weight')
 
@@ -349,12 +390,6 @@ if __name__ == '__main__':
 
     parser.add_argument('--display', action='store_true',
                         help='visualize the results of each step during demo')
-
-    parser.add_argument('--save_pkl', action='store_true',
-                        help='save results to a pkl file')
-
-    parser.add_argument('--save_obj', action='store_true',
-                        help='save results as .obj files.')
 
     parser.add_argument('--gender', type=str, default='neutral',
                         help='set gender of people from (neutral, male, female)')
@@ -373,4 +408,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
 
+    # main(args)
+
+    
+    ##### CHANGES BELOW THIS BLOCK
+    if args.file_type == "video":
+        assert args.vid_file != None, "'--vid_file' flag must be specified when '--file_type' is specified to be video'"
+    elif args.file_type == "frames":
+        assert args.frames_dir != None, "'--frames_dir' flag must be specified when '--file_type' is specified to be 'frames'"
     main(args)
