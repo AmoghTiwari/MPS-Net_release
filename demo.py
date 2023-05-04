@@ -70,7 +70,10 @@ def main(args):
             exit(f"Input video \'{video_file}\' does not exist!")
 
         output_path = osp.join(out_dir, os.path.basename(video_file).replace('.', '_'))
-        Path(output_path).mkdir(parents=True, exist_ok=True)
+        try:
+            Path(output_path).mkdir(parents=True, exist_ok=False)
+        except:
+            pass
         if args.save_processed_input: # Save to a target dir
             image_folder, num_frames, img_shape = video_to_images(video_file, img_folder=output_path,return_info=True)
         else: # Save to "/tmp"
@@ -79,7 +82,10 @@ def main(args):
     elif args.file_type == "frames":
         frames_dir = args.frames_dir
         output_path = osp.join(out_dir, os.path.basename(frames_dir))
-        Path(output_path).mkdir(parents=True, exist_ok=True)
+        try:
+            Path(output_path).mkdir(parents=True, exist_ok=False)
+        except:
+            pass
         image_folder, num_frames, img_shape = frames_from_dir(frames_dir, return_info=True)
 
     print(f"Input number of frames {num_frames}\n")
@@ -302,7 +308,10 @@ def main(args):
             mesh_filename = None
             if args.save_obj:
                 mesh_folder = os.path.join(output_path, 'meshes', f'{person_id:04d}')
-                Path(mesh_folder).mkdir(parents=True, exist_ok=True)
+                try:
+                    Path(mesh_folder).mkdir(parents=True, exist_ok=False)
+                except:
+                    pass
                 mesh_filename = os.path.join(mesh_folder, f'{frame_idx:06d}.obj')
 
             mc = mesh_color[person_id]
