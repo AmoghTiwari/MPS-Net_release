@@ -102,8 +102,9 @@ def trim_videos(filename, start_time, end_time, output_filename):
 def video_to_images(vid_file, img_folder=None, return_info=False):
     if img_folder is None:
         img_folder = '/tmp' # If nothing specified, save extracted video frames to "/tmp"
-    temp = osp.join(img_folder, osp.basename(vid_file).replace('.', '_'))
-    img_folder = f"{temp}_input"
+    # temp = osp.join(img_folder, osp.basename(vid_file).replace('.', '_'))
+    # img_folder = f"{temp}_input"
+    img_folder = osp.join(img_folder, "input_frames")
 
     os.makedirs(img_folder, exist_ok=True)
 
@@ -126,7 +127,7 @@ def video_to_images(vid_file, img_folder=None, return_info=False):
         return img_folder
 
 def frames_from_dir(frames_dir, img_folder=None, return_info=False):
-    print(f'Images are stored in \"{frames_dir}\"')
+    print(f'Reading images from \"{frames_dir}\"')
 
     # img_shape = cv2.imread(osp.join(img_folder, '000001.jpg')).shape
     img_folder = frames_dir
