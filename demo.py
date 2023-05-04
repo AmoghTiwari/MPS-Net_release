@@ -69,7 +69,8 @@ def main(args):
         if not os.path.isfile(video_file):
             exit(f"Input video \'{video_file}\' does not exist!")
 
-        output_path = osp.join(out_dir, os.path.basename(video_file).replace('.', '_'))
+        # output_path = osp.join(out_dir, os.path.basename(video_file).replace('.', '_'))
+        output_path = out_dir
         try:
             Path(output_path).mkdir(parents=True, exist_ok=False)
         except:
@@ -81,7 +82,8 @@ def main(args):
         
     elif args.file_type == "frames":
         frames_dir = args.frames_dir
-        output_path = osp.join(out_dir, os.path.basename(frames_dir))
+        # output_path = osp.join(out_dir, os.path.basename(frames_dir))
+        output_path = out_dir
         try:
             Path(output_path).mkdir(parents=True, exist_ok=False)
         except:
@@ -260,25 +262,49 @@ def main(args):
         print(f'Total FPS (including model loading time): {num_frames / total_time:.2f}.')
 
         if args.save_pkl:
-            print(f"Saving output results to \'{os.path.join(output_path, 'mpsnet_output.pkl')}\'.")
-            joblib.dump(running_results, os.path.join(output_path, "mpsnet_output.pkl"))
+            # print(f"Saving output results to \'{os.path.join(output_path, 'mpsnet_output.pkl')}\'.")
+            print(f"Saving output results to \'{os.path.join(output_path, 'output.pkl')}\'.")
+            # joblib.dump(running_results, os.path.join(output_path, "mpsnet_output.pkl"))
+            joblib.dump(running_results, os.path.join(output_path, "output.pkl"))
 
         if args.file_type == 'video':
-            output_img_folder = os.path.join(output_path, f"{osp.basename(video_file).replace('.', '_')}_output")
+            # output_img_folder = os.path.join(output_path, f"{osp.basename(video_file).replace('.', '_')}_output")
+            if args.render_plain:
+                output_dir_name = f'output_frames_plain'
+            else:
+                output_dir_name = f'output_frames'
+            output_img_folder = os.path.join(output_path, output_dir_name)
         elif args.file_type == 'frames':
-            output_img_folder = os.path.join(output_path, f"{osp.basename(args.frames_dir)}_output")
+            # output_img_folder = os.path.join(output_path, f"{osp.basename(args.frames_dir)}_output")
+            if args.render_plain:
+                output_dir_name = f'output_frames_plain'
+            else:
+                output_dir_name = f'output_frames'
+            output_img_folder = os.path.join(output_path, output_dir_name)
 
     else:
-        if args.file_type == 'video':
-            output_img_folder = os.path.join(output_path, f"{osp.basename(video_file).replace('.', '_')}_output_from_pkl")
-        elif args.file_type == 'frames':
-            output_img_folder = os.path.join(output_path, f"{osp.basename(args.frames_dir)}_output_from_pkl")
         running_results = joblib.load(args.pkl_file)
+        if args.file_type == 'video':
+            # output_img_folder = os.path.join(output_path, f"{osp.basename(video_file).replace('.', '_')}_output")
+            if args.render_plain:
+                output_dir_name = f'output_frames_plain'
+            else:
+                output_dir_name = f'output_frames'
+            output_img_folder = os.path.join(output_path, "from_pkl", output_dir_name)
+        elif args.file_type == 'frames':
+            # output_img_folder = os.path.join(output_path, f"{osp.basename(args.frames_dir)}_output")
+            if args.render_plain:
+                output_dir_name = f'output_frames_plain'
+            else:
+                output_dir_name = f'output_frames'
+            output_img_folder = os.path.join(output_path, "from_pkl", output_dir_name)
 
     """ Render results as a single video """
     renderer = Renderer(resolution=(orig_width, orig_height), orig_img=True, wireframe=args.wireframe)
-
-    os.makedirs(output_img_folder, exist_ok=True)
+    try:
+        os.makedirs(output_img_folder, exist_ok=False)
+    except:
+        pass
 
     print(f"\nRendering output video, writing frames to {output_img_folder}")
     # prepare results for rendering
@@ -352,31 +378,57 @@ def main(args):
         vid_name = os.path.basename(video_file)
         
         if args.render_from_pkl:
-            output_save_name = f'MPS-Net_{vid_name.replace(".mp4", "")}_output_from_pkl.mp4'
+            # output_save_name = f'MPS-Net_{vid_name.replace(".mp4", "")}_output_from_pkl.mp4'
+            if args.render_plain:
+                output_save_name = f'output_plain.mp4'
+            else:
+                output_save_name = f'output.mp4'
+            output_save_path = os.path.join(output_path, "from_pkl", output_save_name)
         else:
-            output_save_name = f'MPS-Net_{vid_name.replace(".mp4", "")}_output.mp4'
-        output_save_path = os.path.join(output_path, output_save_name)
+            # output_save_name = f'MPS-Net_{vid_name.replace(".mp4", "")}_output.mp4'
+            if args.render_plain:
+                output_save_name = f'output_plain.mp4'
+            else:
+                output_save_name = f'output.mp4'
+            output_save_path = os.path.join(output_path, output_save_name)
+
         images_to_video(img_folder=output_img_folder, output_vid_file=output_save_path)
 
         if args.save_processed_input:
-            input_save_name = f'MPS-Net_{vid_name.replace(".mp4", "")}_input.mp4'
+            # input_save_name = f'MPS-Net_{vid_name.replace(".mp4", "")}_input.mp4'
+            input_save_name = f'input_proc.mp4'
             input_save_path = os.path.join(output_path, input_save_name)
             images_to_video(img_folder=image_folder, output_vid_file=input_save_path)
 
-    elif args.file_type == "frames":
+    elif args.file_type == "frames": # TODO: Can remove this if-else statement if the new experiment works
         frames_dir_name = os.path.basename(frames_dir)
         if args.render_from_pkl:
-            output_save_name = f'MPS-Net_{frames_dir_name}_output_from_pkl.mp4'
+            # output_save_name = f'MPS-Net_{frames_dir_name}_output_from_pkl.mp4'
+            if args.render_plain:
+                output_save_name = f'output_plain.mp4'
+            else:
+                output_save_name = f'output.mp4'
+            output_save_path = os.path.join(output_path, "from_pkl", output_save_name)
+            print(f"!!! Rendered results directly from pkl. Results in: {os.path.join(output_path, 'from_pkl')}")
+
         else:
-            output_save_name = f'MPS-Net_{frames_dir_name}_output.mp4'
-        output_save_path = os.path.join(output_path, output_save_name)
+            # output_save_name = f'MPS-Net_{frames_dir_name}_output.mp4'
+            if args.render_plain:
+                output_save_name = f'output_plain.mp4'
+            else:
+                output_save_name = f'output.mp4'
+            output_save_path = os.path.join(output_path, output_save_name)
+
         images_to_video(img_folder=output_img_folder, output_vid_file=output_save_path)
         if args.save_processed_input:
-            input_save_name = f'MPS-Net_{frames_dir_name}_input.mp4'
+            # input_save_name = f'MPS-Net_{frames_dir_name}_input.mp4'
+            input_save_name = f'input_proc.mp4'
             input_save_path = os.path.join(output_path, input_save_name)
             # images_to_video(img_folder=image_folder, output_vid_file=input_save_path)
             print(f"!!! WARNING !!! The video made from the input frames won't be saved. Please check the README for steps if you want to save it")
-
+            # Reason for not saving this is that the "images_to_video" function expects the frames to
+            # abide by a certain naming format. And if our input doesn't follow that format, we run into issues
+        
     print(f"Saving result video to {os.path.abspath(output_save_path)}")
     """
         # shutil.rmtree(output_img_folder)
@@ -442,6 +494,5 @@ if __name__ == '__main__':
         assert args.frames_dir != None, "'--frames_dir' flag must be specified when '--file_type' is specified to be 'frames'"
     if args.render_from_pkl:
         assert args.pkl_file != None, "'pkl_file' flag must be specified when '--render_from_pkl' is specified"
-
     main(args)
     ##### CHANGES ABOVE THIS BLOCK #####
