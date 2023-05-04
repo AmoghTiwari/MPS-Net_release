@@ -1,7 +1,7 @@
 # Custom Files
 # /data/common/UV_PARAMETRIZATION/BLENDER3
 data
-output
+outputs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
