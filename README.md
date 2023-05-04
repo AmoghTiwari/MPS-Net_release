@@ -1,5 +1,9 @@
 # MPS-Net (Forked)
 
+# To Do
+- Experiment for videos as input
+- Remove redundant if-else statements in demo.py
+
 # Summary
 Commands to Run MPS-Net: 
 - With Overlay: ```/data/common/MPS-Net_release/run_on_dance_data.sh```
