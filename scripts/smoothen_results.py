@@ -19,7 +19,7 @@ if __name__ == "__main__":
         person_params = data[pid]
         poses = person_params['pose']
         betas = person_params['betas']
-        verts_ref, poses_ref, joints3d_ref = smooth_pose(poses, betas)
+        verts_ref, poses_ref, joints3d_ref = smooth_pose(poses, betas, min_cutoff=0.004, beta=0.7)
         data_ref[pid]['verts'] = verts_ref
         data_ref[pid]['pose'] = poses_ref
         data_ref[pid]['joints3d'] = joints3d_ref
