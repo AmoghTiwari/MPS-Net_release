@@ -12,8 +12,8 @@ python demo.py --file_type frames --frames_dir data/demo_data/sample_video_mp4 -
 # The results will be found in <out_dir>
 
 # Run One-Euro Filter
-python scripts/smoothen_results.py --in_path outputs/sample_video_mp4/initial/output.pkl --out_path outputs/sample_video_mp4/refined1/output_refined1.pkl --min_cutoff 0.004 --beta 0.7
+python scripts/smoothen_results.py --in_path outputs/sample_video_mp4/initial/output.pkl --out_path outputs/sample_video_mp4/refined1/output_refined.pkl --min_cutoff 0.004 --beta 0.7
 
 # Render results based on the refined pkl file
-python demo.py --file_type frames --frames_dir data/demo_data/sample_video_mp4 --render_from_pkl --pkl_file outputs/sample_video_mp4/refined1/output_refined1.pkl --out_dir outputs/sample_video_mp4/refined1 --gpu 0 
+python demo.py --file_type frames --frames_dir data/demo_data/sample_video_mp4 --render_from_pkl --pkl_file outputs/sample_video_mp4/refined1/output_refined.pkl --out_dir outputs/sample_video_mp4/refined1 --gpu 0 
 # Note: To just render the SMPL, not overlay it, use the "--render_plain" argument
