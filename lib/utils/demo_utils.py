@@ -104,7 +104,7 @@ def video_to_images(vid_file, img_folder=None, return_info=False):
         img_folder = '/tmp' # If nothing specified, save extracted video frames to "/tmp"
     # temp = osp.join(img_folder, osp.basename(vid_file).replace('.', '_'))
     # img_folder = f"{temp}_input"
-    img_folder = osp.join(img_folder, "input_frames")
+    img_folder = osp.join(img_folder, "extracted_frames")
 
     os.makedirs(img_folder, exist_ok=True)
 
