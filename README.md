@@ -9,7 +9,7 @@ After following the steps mentioned in the original README (see "README_original
 # Demo
 - Activate conda environmnet:
 ```
-    source /data/groot/miniconda3/condabin/conda # Source your conda environment
+    source source /data/groot/miniconda3/bin/activate # Source your conda environment
     conda activate mps_env # Activate your conda environment
 ```
 - Go to the `scripts` directory: `cd scripts`
@@ -17,6 +17,10 @@ After following the steps mentioned in the original README (see "README_original
 - To run on a set of frames, see `run_demo_frames.sh` (Only the first command of the script is needed)
 - **Important !!!** Please copy paste the commands one by one from the bash script and run them individually. Also ensure that you read the corresponding comments in the bash script. This is because you might not require all the steps done in the bash script
 - To render results on a plain background (i.e. without overlaying the results on the input video), include the `--render_plain` flag when running the `demo.py` file.
+- Example command for reference below.
+```
+python demo.py --file_type frames --frames_dir data/demo_data/sample_video_mp4 --out_dir outputs/sample_video_mp4/initial --gpu 0 --save_pkl --save_obj --save_processed_input
+```
 
 # Run One-Euro Filter
 - Check the second command in `run_demo_video.sh` or `run_demo_frames.sh`
