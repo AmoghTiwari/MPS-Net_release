@@ -197,7 +197,7 @@ def main(args):
             dataloader = DataLoader(dataset, batch_size=64, num_workers=0)     #32
             with torch.no_grad():
                 pred_cam, pred_verts, pred_pose, pred_betas, pred_joints3d, norm_joints2d = [], [], [], [], [], []
-
+                pred_joints2d = []
                 for i, batch in enumerate(dataloader):
                     if has_keypoints:
                         batch, nj2d = batch
@@ -211,12 +211,14 @@ def main(args):
                     pred_pose.append(output['theta'][:, 3:75])
                     pred_betas.append(output['theta'][:, 75:])
                     pred_joints3d.append(output['kp_3d'])
+                    pred_joints2d.append(output['kp_2d'])
 
                 pred_cam = torch.cat(pred_cam, dim=0)
                 pred_verts = torch.cat(pred_verts, dim=0)
                 pred_pose = torch.cat(pred_pose, dim=0)
                 pred_betas = torch.cat(pred_betas, dim=0)
                 pred_joints3d = torch.cat(pred_joints3d, dim=0)
+                pred_joints2d = torch.cat(pred_joints2d, dim=0)
 
                 del batch
 
@@ -226,6 +228,7 @@ def main(args):
             pred_pose = pred_pose.cpu().numpy()
             pred_betas = pred_betas.cpu().numpy()
             pred_joints3d = pred_joints3d.cpu().numpy()
+            pred_joints2d = pred_joints2d.cpu().numpy()
 
             bboxes[:, 2:] = bboxes[:, 2:] * 1.2
             if args.render_plain:
@@ -244,7 +247,7 @@ def main(args):
                 'pose': pred_pose,
                 'betas': pred_betas,
                 'joints3d': pred_joints3d,
-                'joints2d': joints2d,
+                'joints2d': pred_joints2d,
                 'bboxes': bboxes,
                 'frame_ids': frames,
             }
