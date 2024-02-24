@@ -121,6 +121,8 @@ if __name__ == "__main__":
             data_path = f'./data/preprocessed_data/{target_dataset}_{set}_25fps_nosmpl_db.pt'  # [TCMR] Table 4 
         elif cfg.TITLE == 'repr_table6_h36m_model':
             data_path = f'./data/preprocessed_data/{target_dataset}_{set}_front_25fps_tight_nosmpl_db.pt'  # [TCMR] Table 6
+        else: 
+            data_path = f'./data/preprocessed_data/{target_dataset}_{set}_25fps_db.pt'  # [TCMR] Table 4
     elif target_dataset == 'mpii3d':
         set = 'val'
         data_path = f'./data/preprocessed_data/{target_dataset}_{set}_scale12_db.pt'  #    
@@ -194,7 +196,6 @@ if __name__ == "__main__":
 
                 input_feat = torch.cat(input_feat, dim=0)
                 preds, score, preds_Dm = model(input_feat, J_regressor=J_regressor, is_train=False)      #
-
                 n_kp = preds[-1]['kp_3d'].shape[-2]
                 pred_j3d = preds[-1]['kp_3d'].view(-1, n_kp, 3).cpu().numpy()
                 pred_vert = preds[-1]['verts'].view(-1, 6890, 3).cpu().numpy()
@@ -377,7 +378,6 @@ if __name__ == "__main__":
             if valid_map[-1] == len(accel_err)-1:
                 valid_map = valid_map[:-1]
             accel_err = accel_err[valid_map]
-
             full_res['mpjpe'].append(mpjpe)
             full_res['mpjpe_pa'].append(mpjpe_pa)
             full_res['accel_err'].append(accel_err)
@@ -387,6 +387,7 @@ if __name__ == "__main__":
 
         print(f"\nEvaluated total {tot_num_pose} poses")
         full_res.pop(0, None)
+        joblib.dump(full_res, f"outputs/error_arrays/mpsnet_result_{target_dataset}.pkl")
         full_res = {k: np.mean(np.concatenate(v)) for k, v in full_res.items()}
         print(full_res)
 
