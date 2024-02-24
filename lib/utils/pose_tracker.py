@@ -78,7 +78,7 @@ def read_posetrack_keypoints(output_folder):
     return people
 
 
-def run_posetracker(video_file, staf_folder, posetrack_output_folder='/tmp', display=False):
+def run_posetracker(video_file, staf_folder, posetrack_output_folder='./tmp_dir', display=False):
     posetrack_output_folder = os.path.join(
         posetrack_output_folder,
         f'{os.path.basename(video_file)}_posetrack'

@@ -101,7 +101,7 @@ def trim_videos(filename, start_time, end_time, output_filename):
 
 def video_to_images(vid_file, img_folder=None, return_info=False):
     if img_folder is None:
-        img_folder = '/tmp' # If nothing specified, save extracted video frames to "/tmp"
+        img_folder = './tmp_dir' # If nothing specified, save extracted video frames to "./tmp_dir"
     # temp = osp.join(img_folder, osp.basename(vid_file).replace('.', '_'))
     # img_folder = f"{temp}_input"
     img_folder = osp.join(img_folder, "extracted_frames")
