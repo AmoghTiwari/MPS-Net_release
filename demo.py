@@ -61,7 +61,7 @@ def main(args):
         video_file = args.vid_file
         if video_file.startswith('https://www.youtube.com'):
             print(f"Donwloading YouTube video \'{video_file}\'")
-            video_file = download_youtube_clip(video_file, '/tmp')
+            video_file = download_youtube_clip(video_file, './tmp_dir')
             if video_file is None:
                 exit('Youtube url is not valid!')
             print(f"YouTube Video has been downloaded to {video_file}...")
@@ -77,7 +77,7 @@ def main(args):
             pass
         if args.save_processed_input: # Save to a target dir
             image_folder, num_frames, img_shape = video_to_images(video_file, img_folder=output_path,return_info=True)
-        else: # Save to "/tmp"
+        else: # Save to ./tmp_dir""
             image_folder, num_frames, img_shape = video_to_images(video_file, img_folder=None,return_info=True)
         
     elif args.file_type == "frames":
@@ -372,11 +372,9 @@ def main(args):
             # abide by a certain naming format. And if our input doesn't follow that format, we run into issues
     
     print(f"Saving result video to {os.path.abspath(output_save_path)}")
-    """
-        # shutil.rmtree(output_img_folder)
-        # shutil.rmtree(input_img_folder)
-        # shutil.rmtree(image_folder)
-    """
+    shutil.rmtree(output_img_folder)
+    # shutil.rmtree(input_img_folder)
+    shutil.rmtree(image_folder)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
